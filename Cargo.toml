@@ -3,8 +3,8 @@ name = "flern"
 version = "0.1.0"
 edition = "2024"
 description = "Flern — W.I.P backend for FLERN project."
-#license-file = "LICENSE.TXT"
-#readme = "README.md"
+license-file = "LICENSE.TXT"
+readme = "README.md"
 
 [dependencies]
 # Basic

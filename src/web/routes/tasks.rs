@@ -1,7 +1,7 @@
 use crate::{
     model::{
         CrudRepository, ResourceTyped,
-        entity::{Answer, LessonTask},
+        entity::{Answer, LessonTask, UserProgress, UserProgressCreate},
     },
     web::{
         AppState, RequestContext, WebError, WebResult,
@@ -28,7 +28,7 @@ pub fn routes<S>(state: AppState) -> Router<S> {
 #[utoipa::path(
     post,
     path = "/api/v1/tasks/check",
-    description = "Check if provided answer is correct",
+    description = "Check if provided answer is correct and mark according lesson as completed",
     request_body = TaskCheckRequest,
     responses(
         (status = 200, description = "Answer checked", body = TaskCheckResponse),
@@ -70,8 +70,6 @@ async fn tasks_check_answer_handler(
         _ => answer.is_correct(),
     };
 
-    // TODO: add progress mark in db
-
     let task = LessonTask::find_by_id(state.pool(), &user, answer.task_id())
         .await
         .map_err(|e| WebError::resource_fetch_error(LessonTask::get_resource_type(), e))?;
@@ -79,6 +77,22 @@ async fn tasks_check_answer_handler(
         return Err(WebError::resource_not_found(LessonTask::get_resource_type()));
     }
     let task = task.unwrap();
+
+    // TODO: add progress mark in db
+
+    // Current implementation allows multiple tasks per lesson
+    // but our frontend couldn't do that before deadline, so currently
+    // we are building according to lesson -> task, not lesson -> task(s)[]
+    // according to our decision /tasks/check route will mark lesson as done too
+    if is_correct {
+        UserProgress::create(
+            state.pool(),
+            &user,
+            UserProgressCreate::new(user.user_id(), task.lesson_id(), true),
+        )
+        .await
+        .map_err(|e| WebError::resource_fetch_error(UserProgress::get_resource_type(), e))?;
+    }
 
     Ok((
         StatusCode::OK,

@@ -1,5 +1,5 @@
 mod common;
-use reqwest::StatusCode;
+use axum::http::StatusCode;
 use flern::model::entity::UserEntity;
 use flern::web::middlewares::AUTH_TOKEN;
 use serde_json::json;

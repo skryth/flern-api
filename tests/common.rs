@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
+use axum::http::StatusCode;
 use axum_test::TestServer;
-use reqwest::StatusCode;
 use flern::{build_server_with_pool, model::DbConnection};
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};

@@ -177,3 +177,43 @@ impl HasOwner for Lesson {
         Ok(self.module_id)
     }
 }
+
+// Utils
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct LessonWithStatusRow {
+    pub id: Uuid,
+    pub module_id: Uuid,
+    pub title: String,
+    pub content: String,
+    pub status: bool,
+}
+
+impl LessonWithStatusRow {
+    pub async fn find_by_id(
+        mm: &ModelManager,
+        actor: &AuthenticatedUser,
+        lesson_id: Uuid,
+    ) -> DatabaseResult<Self> {
+        let row: LessonWithStatusRow = sqlx::query_as(
+            r#"
+            SELECT 
+                l.id, 
+                l.module_id, 
+                l.title, 
+                l.content, 
+                COALESCE(up.status, false) AS status
+            FROM lessons l
+            LEFT JOIN user_progress up
+                ON l.id = up.lesson_id AND up.user_id = $2
+            WHERE l.id = $1
+            "#
+        )
+        .bind(lesson_id)
+        .bind(&actor.user_id())
+        .fetch_one(mm.executor())
+        .await?;
+
+        Ok(row)
+    }
+}

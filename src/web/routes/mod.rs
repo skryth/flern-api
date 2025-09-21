@@ -7,6 +7,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 pub mod user;
 pub mod modules;
+pub mod lessons;
 
 #[derive(Debug, Clone, Deserialize, utoipa::ToSchema)]
 pub struct PaginationQuery {
@@ -18,6 +19,7 @@ pub fn build_app<S: Send + Sync + Clone + 'static>(state: AppState) -> Router<S>
     let mut router = Router::new()
         .nest("/api/v1/account/", user::routes(state.clone()))
         .nest("/api/v1/modules/", modules::routes(state.clone()))
+        .nest("/api/v1/lessons/", lessons::routes(state.clone()))
         .layer(CookieManagerLayer::default())
         .with_state(state);
 

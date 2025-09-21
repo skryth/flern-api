@@ -6,7 +6,6 @@ use crate::web::AuthenticatedUser;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
-use sqlx::prelude::Row;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, FromRow, utoipa::ToSchema)]
@@ -14,7 +13,7 @@ pub struct UserProgress {
     id: Uuid,
     user_id: Uuid,
     lesson_id: Uuid,
-    status: String,
+    status: bool,
 }
 
 impl ResourceTyped for UserProgress {
@@ -36,15 +35,21 @@ impl UserProgress {
         self.lesson_id
     }
 
-    pub fn status(&self) -> &str {
-        &self.status
+    pub fn status(&self) -> bool {
+        self.status
     }
 }
 
 pub struct UserProgressCreate {
     user_id: Uuid,
     lesson_id: Uuid,
-    status: String,
+    status: bool,
+}
+
+impl UserProgressCreate {
+    pub fn new(user_id: Uuid, lesson_id: Uuid, status: bool) -> Self {
+        Self { user_id, lesson_id, status }
+    }
 }
 
 #[async_trait]
@@ -54,21 +59,23 @@ impl CrudRepository<UserProgress, UserProgressCreate, uuid::Uuid> for UserProgre
         _actor: &AuthenticatedUser,
         data: UserProgressCreate,
     ) -> DatabaseResult<Self> {
-        let result = sqlx::query("INSERT INTO user_progress (id, user_id, lesson_id, status) VALUES ($1,$2,$3,$4) RETURNING id")
-            .bind(Uuid::new_v4())
-            .bind(data.user_id)
-            .bind(data.lesson_id)
-            .bind(&data.status)
-            .fetch_one(mm.executor())
-            .await?;
+        let row = sqlx::query_as(
+            r#"
+            INSERT INTO user_progress (id, user_id, lesson_id, status)
+            VALUES ($1,$2,$3,$4)
+            ON CONFLICT (user_id, lesson_id)
+            DO UPDATE SET status = EXCLUDED.status
+            RETURNING id, user_id, lesson_id, status
+            "#
+        )
+        .bind(Uuid::new_v4())
+        .bind(data.user_id)
+        .bind(data.lesson_id)
+        .bind(data.status)
+        .fetch_one(mm.executor())
+        .await?;
 
-        let id = result.try_get("id")?;
-        Ok(UserProgress {
-            id,
-            user_id: data.user_id,
-            lesson_id: data.lesson_id,
-            status: data.status,
-        })
+        Ok(row)
     }
 
     async fn update(
@@ -154,3 +161,5 @@ impl HasOwner for UserProgress {
         Ok(self.user_id)
     }
 }
+
+// Utils

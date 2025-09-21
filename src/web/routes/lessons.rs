@@ -17,6 +17,7 @@ pub fn routes<S>(state: AppState) -> Router<S> {
         .route("/{id}", get(lessons_get_handler))
         .route("/{id}/done", post(lessons_mark_done_handler))
         .route("/{id}/tasks", get(lessons_get_tasks_handler))
+        .route("/{id}/next", get(lessons_get_next_handler))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             middlewares::extract_context_fn,
@@ -150,3 +151,39 @@ async fn lessons_get_tasks_handler(
 
     Ok((StatusCode::OK, Json(responses)))
 } 
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/lessons/{lesson_id}/next",
+    description = "Returns next in order uncompleted lesson",
+    params(
+        ("lesson_id" = Uuid, Path, description = "ID of the current lesson")
+    ),
+    responses(
+        (status = 200, description = "Found next lesson", body = LessonResponse),
+        (status = 404, description = "Next lesson not found", body = ErrorResponse),
+        (status = 401, description = "You're not authorized to do this", body = ErrorResponse),
+        (status = 500, description = "Internal server error", body = ErrorResponse),
+    ),
+    security(
+        ("cookie" = [])
+    ),
+    tag = "lessons"
+)]
+async fn lessons_get_next_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    ctx: RequestContext,
+) -> WebResult<impl IntoResponse> {
+    let user = ctx.user()?;
+    let next = LessonWithStatusRow::find_next_uncompleted(state.pool(), &user, id)
+        .await
+        .map_err(|e| WebError::resource_fetch_error(Lesson::get_resource_type(), e))?;
+
+
+    if let Some(next) = next {
+        Ok((StatusCode::OK, Json(LessonResponse::from(next))))
+    } else {
+        Err(WebError::resource_not_found(Lesson::get_resource_type()))
+    }
+}

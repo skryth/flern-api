@@ -216,4 +216,41 @@ impl LessonWithStatusRow {
 
         Ok(row)
     }
+
+    pub async fn find_next_uncompleted(
+        mm: &ModelManager,
+        actor: &AuthenticatedUser,
+        lesson_id: Uuid,
+    ) -> DatabaseResult<Option<Self>> {
+        let row = sqlx::query_as(
+            r#"
+            SELECT
+                l.id,
+                l.module_id,
+                l.title,
+                l.content,
+                COALESCE(up.status, FALSE) AS status
+            FROM lessons l
+            JOIN modules m ON m.id = l.module_id
+            LEFT JOIN user_progress up
+                ON up.lesson_id = l.id
+                AND up.user_id = $2
+            WHERE m.id = (
+                SELECT module_id FROM lessons WHERE id = $1
+            )
+            AND l.order_index > (
+                SELECT order_index FROM lessons WHERE id = $1
+            )
+            AND COALESCE (up.status, FALSE) = FALSE
+            ORDER BY l.order_index ASC
+            LIMIT 1;
+            "#
+        )
+        .bind(lesson_id)
+        .bind(actor.user_id())
+        .fetch_optional(mm.executor())
+        .await?;
+
+        Ok(row)
+    }
 }

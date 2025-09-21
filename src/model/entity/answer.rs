@@ -163,3 +163,26 @@ impl HasOwner for Answer {
         Ok(self.task_id)
     }
 }
+
+// Utils
+
+impl Answer {
+    pub async fn find_all_by_task(
+        mm: &ModelManager,
+        _actor: &AuthenticatedUser,
+        task_id: Uuid,
+    ) -> DatabaseResult<Vec<Self>> {
+        let rows: Vec<Self> = sqlx::query_as(
+            r#"
+            SELECT *
+            FROM task_answers ta
+            WHERE ta.task_id = $1
+            "#
+        )
+        .bind(task_id)
+        .fetch_all(mm.executor())
+        .await?;
+
+        Ok(rows)
+    }
+}

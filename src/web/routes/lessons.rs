@@ -5,9 +5,10 @@ use axum::{extract::State, middleware, response::IntoResponse, routing::get, Rou
 use axum::http::StatusCode;
 use uuid::Uuid;
 
-use crate::model::entity::{Lesson, LessonWithStatusRow, UserProgress, UserProgressCreate};
+use crate::model::entity::{Answer, Lesson, LessonTask, LessonWithStatusRow, UserProgress, UserProgressCreate};
 use crate::model::{CrudRepository, ResourceTyped};
 use crate::web::dto::lessons::LessonResponse;
+use crate::web::dto::tasks::TaskResponse;
 use crate::web::error::ErrorResponse;
 use crate::web::{middlewares, AppState, RequestContext, WebError, WebResult};
 
@@ -15,6 +16,7 @@ pub fn routes<S>(state: AppState) -> Router<S> {
     Router::new()
         .route("/{id}", get(lessons_get_handler))
         .route("/{id}/done", post(lessons_mark_done_handler))
+        .route("/{id}/tasks", get(lessons_get_tasks_handler))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             middlewares::extract_context_fn,
@@ -97,3 +99,54 @@ async fn lessons_mark_done_handler(
 
     Ok(StatusCode::OK)
 }
+
+#[utoipa::path(
+    get,
+    path = "/api/v1/lessons/{lesson_id}/tasks",
+    description = "Get all tasks for this lesson",
+    params(
+        ("lesson_id" = Uuid, Path, description = "ID of the lesson to get tasks for")
+    ),
+    responses(
+        (status = 200, description = "Tasks found", body = Vec<TaskResponse>),
+        (status = 404, description = "Lesson not found", body = ErrorResponse),
+        (status = 401, description = "You're not authorized to do this", body = ErrorResponse),
+        (status = 500, description = "Internal server error", body = ErrorResponse),
+    ),
+    security(
+        ("cookie" = [])
+    ),
+    tag = "tasks"
+)]
+async fn lessons_get_tasks_handler(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    ctx: RequestContext,
+) -> WebResult<impl IntoResponse> {
+    let user = ctx.user()?;
+    let exists = Lesson::find_by_id(state.pool(), &user, id)
+        .await
+        .map_err(|e| WebError::resource_fetch_error(LessonTask::get_resource_type(), e))?
+        .is_some();
+
+    if !exists {
+        return Err(WebError::resource_not_found(LessonTask::get_resource_type()));
+    }
+
+    let tasks = LessonTask::find_all_by_lesson(state.pool(), &user, id)
+        .await
+        .map_err(|e| WebError::resource_fetch_error(LessonTask::get_resource_type(), e))?;
+
+    // fetch all answers
+    let mut responses = Vec::new();
+    for task in tasks {
+        let answers = Answer::find_all_by_task(state.pool(), &user, task.id())
+            .await
+            .map_err(|e| WebError::resource_fetch_error(Answer::get_resource_type(), e))?;
+
+        let response = TaskResponse::from_entity(task, answers);
+        responses.push(response);
+    }
+
+    Ok((StatusCode::OK, Json(responses)))
+} 

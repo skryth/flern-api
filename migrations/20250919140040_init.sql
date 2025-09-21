@@ -25,7 +25,7 @@ CREATE TABLE lessons (
 CREATE TABLE tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-    task_type TEXT NOT NULL CHECK (task_type IN ('fill_code', 'multiple_choice', 'debug_code', 'string_cmp')),
+    task_type TEXT NOT NULL CHECK (task_type IN ('fill_code', 'choice', 'string_cmp')),
     question TEXT NOT NULL,
     explanation TEXT NOT NULL
 );
@@ -79,7 +79,7 @@ VALUES
 INSERT INTO tasks (lesson_id, task_type, question, explanation)
 VALUES
   ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'fill_code', 'Fill in the missing keyword: ___ x = 5;', 'You need to declare an immutable variable.'),
-  ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'multiple_choice', 'Which keyword makes a variable mutable in Rust?', 'The mut keyword makes variables mutable.');
+  ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'choice', 'Which keyword makes a variable mutable in Rust?', 'The mut keyword makes variables mutable.');
 
 -- Answers for task1 (fill_code)
 INSERT INTO task_answers (task_id, answer_text, image, is_correct)
@@ -98,7 +98,7 @@ VALUES
 -- Insert tasks for lesson 2
 INSERT INTO tasks (lesson_id, task_type, question, explanation)
 VALUES
-  ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'debug_code', 'Fix the borrow checker error in the code snippet.', 'Remember: you cannot have mutable and immutable references at the same time.'),
+  ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'fill_code', 'Fix the borrow checker error in the code snippet.', 'Remember: you cannot have mutable and immutable references at the same time.'),
   ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'string_cmp', 'What will be the result of comparing String::from(\"hi\") == \"hi\"?', 'Rust allows comparing String with &str because of the PartialEq implementation.');
 
 -- Answers for task3 (debug_code)
@@ -110,6 +110,5 @@ VALUES
 -- Answers for task4 (string_cmp)
 INSERT INTO task_answers (task_id, answer_text, image, is_correct)
 VALUES
-  ((SELECT id FROM tasks WHERE question LIKE 'What will be the result of comparing%'), 'true', '', TRUE),
-  ((SELECT id FROM tasks WHERE question LIKE 'What will be the result of comparing%'), 'false', '', FALSE);
+  ((SELECT id FROM tasks WHERE question LIKE 'What will be the result of comparing%'), 'true', '', TRUE);
 

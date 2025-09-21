@@ -160,3 +160,25 @@ impl HasOwner for LessonTask {
         Ok(self.lesson_id)
     }
 }
+
+// Utils
+impl LessonTask {
+    pub async fn find_all_by_lesson(
+        mm: &ModelManager,
+        _actor: &AuthenticatedUser,
+        lesson_id: Uuid,
+    ) -> DatabaseResult<Vec<Self>> {
+        let rows: Vec<Self> = sqlx::query_as(
+            r#"
+            SELECT *
+            FROM tasks t
+            WHERE t.lesson_id = $1
+            "#
+        )
+        .bind(lesson_id)
+        .fetch_all(mm.executor())
+        .await?;
+
+        Ok(rows)
+    }
+}

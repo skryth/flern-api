@@ -34,6 +34,12 @@ pub enum AuthenticationError {
 }
 
 #[derive(Debug, Error)]
+pub enum UserError {
+    #[error("UserBadRequest, message: {message}")]
+    UserBadRequest { message: String }
+}
+
+#[derive(Debug, Error)]
 pub enum ResourceError {
     #[error("ResourceNotFound: {resource_type:?}")]
     ResourceNotFound { resource_type: ResourceType },
@@ -112,6 +118,22 @@ impl AuthenticationError {
     }
 }
 
+impl UserError {
+    pub fn status_code(&self) -> StatusCode {
+        match self {
+            Self::UserBadRequest { .. } => StatusCode::BAD_REQUEST,
+        }
+    }
+
+    pub fn client_display(&self) -> String {
+        match self {
+            Self::UserBadRequest { message } => {
+                format!("Bad request: {message}")
+            }
+        }
+    }
+}
+
 impl ResourceError {
     pub fn status_code(&self) -> StatusCode {
         match self {
@@ -142,6 +164,8 @@ pub enum WebError {
     AuthenticationError(#[from] AuthenticationError),
     #[error("RegistrationError - {0}")]
     RegistrationError(#[from] RegistrationError),
+    #[error("UserError - {0}")]
+    UserError(#[from] UserError),
     #[error("ServerError - {0}")]
     ServerError(#[from] ServerError),
 }
@@ -204,12 +228,17 @@ impl WebError {
         Self::ServerError(ServerError::ServerCryptError(e))
     }
 
+    pub fn user_bad_request(msg: String) -> Self {
+        Self::UserError(UserError::UserBadRequest { message: msg })
+    }
+
     pub fn status_code(&self) -> axum::http::StatusCode {
         match self {
             Self::ResourceError(e) => e.status_code(),
             Self::RegistrationError(e) => e.status_code(),
             Self::AuthenticationError(e) => e.status_code(),
             Self::ServerError(e) => e.status_code(),
+            Self::UserError(e) => e.status_code(),
         }
     }
 
@@ -219,6 +248,7 @@ impl WebError {
             Self::RegistrationError(e) => e.client_display(),
             Self::AuthenticationError(e) => e.client_display(),
             Self::ServerError(e) => e.client_display(),
+            Self::UserError(e) => e.client_display(),
         }
     }
 }

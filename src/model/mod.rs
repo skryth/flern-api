@@ -7,7 +7,7 @@ pub use database::DbConnection;
 pub mod entity;
 
 mod error;
-pub use error::DatabaseError;
+pub use error::{DatabaseError, DatabaseResult};
 
 mod repo;
 pub use repo::{CrudRepository, Page, PaginatableRepository, ResourceType, ResourceTyped};

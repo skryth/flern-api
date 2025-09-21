@@ -5,9 +5,13 @@ use axum::{
 
 use crate::{
     model::{
-        entity::{Module, ModuleWithLessons}, ResourceTyped
+        ResourceTyped,
+        entity::{Module, ModuleWithLessonsRow},
     },
-    web::{error::ErrorResponse, middlewares, AppState, RequestContext, WebError, WebResult},
+    web::{
+        AppState, RequestContext, WebError, WebResult, dto::modules::ModuleWithLessons,
+        error::ErrorResponse, middlewares,
+    },
 };
 
 pub fn routes<S>(state: AppState) -> Router<S> {
@@ -39,8 +43,9 @@ async fn modules_list_handler(
     State(state): State<AppState>,
 ) -> WebResult<impl IntoResponse> {
     let user = ctx.user()?;
-    let modules = ModuleWithLessons::fetch_all(state.pool(), &user)
+    let modules = ModuleWithLessonsRow::fetch_all(state.pool(), &user)
         .await
+        .and_then(ModuleWithLessons::from_rows)
         .map_err(|e| WebError::resource_fetch_error(Module::get_resource_type(), e))?;
 
     Ok((StatusCode::OK, Json(modules)))

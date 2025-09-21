@@ -11,4 +11,6 @@ pub use state::AppState;
 
 pub mod routes;
 
+pub mod dto;
+
 pub mod doc;

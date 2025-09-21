@@ -180,22 +180,6 @@ impl HasOwner for Module {
 
 // Utils
 
-#[derive(Serialize, Deserialize, utoipa::ToSchema)]
-pub struct LessonShort {
-    pub id: Uuid,
-    pub title: String,
-    pub completed: bool,
-}
-
-#[derive(Serialize, Deserialize, utoipa::ToSchema)]
-pub struct ModuleWithLessons {
-    pub id: Uuid,
-    pub title: String,
-    pub description: String,
-    pub order_index: i32,
-    pub lessons: Vec<LessonShort>,
-}
-
 #[derive(sqlx::FromRow)]
 pub struct ModuleWithLessonsRow {
     pub id: Uuid,
@@ -205,21 +189,7 @@ pub struct ModuleWithLessonsRow {
     pub lessons: serde_json::Value,
 }
 
-impl TryFrom<ModuleWithLessonsRow> for ModuleWithLessons {
-    type Error = serde_json::Error;
-
-    fn try_from(value: ModuleWithLessonsRow) -> Result<Self, Self::Error> {
-        Ok(Self {
-            id: value.id,
-            title: value.title,
-            description: value.description,
-            order_index: value.order_index,
-            lessons: serde_json::from_value(value.lessons)?,
-        })
-    }
-}
-
-impl ModuleWithLessons {
+impl ModuleWithLessonsRow {
     pub async fn fetch_all(
         mm: &ModelManager,
         actor: &AuthenticatedUser,
@@ -227,38 +197,34 @@ impl ModuleWithLessons {
         let rows: Vec<ModuleWithLessonsRow> = sqlx::query_as(
             r#"
             SELECT
-                m.id,
-                m.title,
-                m.description,
-                m.order_index,
-                COALESCE(
+            m.id,
+            m.title,
+            m.description,
+            m.order_index,
+            COALESCE(
                 json_agg(
                     json_build_object(
                         'id', l.id,
                         'title', l.title,
                         'completed', COALESCE(up.status = 'done', false)
                     )
-                  ) FILTER (WHERE l.id IS NOT NULL),
-                    '[]'
-                ) AS lessons
+                ) FILTER (WHERE l.id IS NOT NULL),
+                '[]'
+            ) AS lessons
             FROM modules m
             LEFT JOIN lessons l ON l.module_id = m.id
             LEFT JOIN user_progress up
-                ON up.lesson_id = l.id
-               AND up.user_id = $1
+            ON up.lesson_id = l.id
+            AND up.user_id = $1
             GROUP BY m.id
             ORDER BY m.order_index;
-            "#
-        )
-        .bind(actor.user_id())
-        .fetch_all(mm.executor())
-        .await?;
+        "#
+            )
+            .bind(actor.user_id())
+            .fetch_all(mm.executor())
+            .await?;
 
-        let modules: Vec<ModuleWithLessons> = rows
-            .into_iter()
-            .map(|r| ModuleWithLessons::try_from(r))
-            .collect::<Result<_,_>>()?;
-
-        Ok(modules) 
+        Ok(rows) 
     }
 }
+

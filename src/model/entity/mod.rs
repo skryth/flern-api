@@ -2,7 +2,7 @@ mod user;
 pub use user::{UserEntity, UserEntityCreateUpdate};
 
 mod module;
-pub use module::{Module, ModuleCreate, ModuleWithLessons};
+pub use module::{Module, ModuleCreate, ModuleWithLessonsRow};
 
 mod lesson;
 pub use lesson::{Lesson, LessonCreate};

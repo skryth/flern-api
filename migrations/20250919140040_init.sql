@@ -59,56 +59,56 @@ CREATE TABLE user_task_attempts (
 --- Fake data, just for dev
 
 -- Insert users
-INSERT INTO users (username, password_hash, role)
-VALUES 
-  ('admin', '$argon2d$v=19$m=12,t=3,p=1$dXFsMjBjNWttZmswMDAwMA$UCzL5Yi9swPp9FCBzAlxzA', 'admin'),
-  ('student1', '$argon2d$v=19$m=12,t=3,p=1$dXFsMjBjNWttZmswMDAwMA$UCzL5Yi9swPp9FCBzAlxzA', 'user');
-
--- Insert module
-INSERT INTO modules (title, description, order_index)
-VALUES 
-  ('Rust Basics', 'Introduction to Rust programming language', 1);
-
--- Insert lessons
-INSERT INTO lessons (module_id, title, content, order_index)
-VALUES
-  ((SELECT id FROM modules WHERE title = 'Rust Basics'), 'Variables and Mutability', 'Learn about let, mut, and constants in Rust.', 1),
-  ((SELECT id FROM modules WHERE title = 'Rust Basics'), 'Ownership and Borrowing', 'Understand how Rust manages memory safely.', 2);
-
--- Insert tasks for lesson 1
-INSERT INTO tasks (lesson_id, task_type, question, explanation)
-VALUES
-  ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'fill_code', 'Fill in the missing keyword: ___ x = 5;', 'You need to declare an immutable variable.'),
-  ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'choice', 'Which keyword makes a variable mutable in Rust?', 'The mut keyword makes variables mutable.');
-
--- Answers for task1 (fill_code)
-INSERT INTO task_answers (task_id, answer_text, image, is_correct)
-VALUES
-  ((SELECT id FROM tasks WHERE question LIKE 'Fill in the missing keyword%'), 'let', '', TRUE),
-  ((SELECT id FROM tasks WHERE question LIKE 'Fill in the missing keyword%'), 'mut', '', FALSE),
-  ((SELECT id FROM tasks WHERE question LIKE 'Fill in the missing keyword%'), 'const', '', FALSE);
-
--- Answers for task2 (multiple_choice)
-INSERT INTO task_answers (task_id, answer_text, image, is_correct)
-VALUES
-  ((SELECT id FROM tasks WHERE question LIKE 'Which keyword makes a variable mutable%'), 'let', '', FALSE),
-  ((SELECT id FROM tasks WHERE question LIKE 'Which keyword makes a variable mutable%'), 'mut', '', TRUE),
-  ((SELECT id FROM tasks WHERE question LIKE 'Which keyword makes a variable mutable%'), 'var', '', FALSE);
-
--- Insert tasks for lesson 2
-INSERT INTO tasks (lesson_id, task_type, question, explanation)
-VALUES
-  ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'fill_code', 'Fix the borrow checker error in the code snippet.', 'Remember: you cannot have mutable and immutable references at the same time.'),
-  ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'string_cmp', 'What will be the result of comparing String::from(\"hi\") == \"hi\"?', 'Rust allows comparing String with &str because of the PartialEq implementation.');
-
--- Answers for task3 (debug_code)
-INSERT INTO task_answers (task_id, answer_text, image, is_correct)
-VALUES
-  ((SELECT id FROM tasks WHERE question LIKE 'Fix the borrow checker%'), 'Remove the immutable reference.', '', TRUE),
-  ((SELECT id FROM tasks WHERE question LIKE 'Fix the borrow checker%'), 'Use unsafe to bypass borrow checker.', '', FALSE);
-
--- Answers for task4 (string_cmp)
-INSERT INTO task_answers (task_id, answer_text, image, is_correct)
-VALUES
-  ((SELECT id FROM tasks WHERE question LIKE 'What will be the result of comparing%'), 'true', '', TRUE);
+-- INSERT INTO users (username, password_hash, role)
+-- VALUES 
+--   ('admin', '$argon2d$v=19$m=12,t=3,p=1$dXFsMjBjNWttZmswMDAwMA$UCzL5Yi9swPp9FCBzAlxzA', 'admin'),
+--   ('student1', '$argon2d$v=19$m=12,t=3,p=1$dXFsMjBjNWttZmswMDAwMA$UCzL5Yi9swPp9FCBzAlxzA', 'user');
+-- 
+-- -- Insert module
+-- INSERT INTO modules (title, description, order_index)
+-- VALUES 
+--   ('Rust Basics', 'Introduction to Rust programming language', 1);
+-- 
+-- -- Insert lessons
+-- INSERT INTO lessons (module_id, title, content, order_index)
+-- VALUES
+--   ((SELECT id FROM modules WHERE title = 'Rust Basics'), 'Variables and Mutability', 'Learn about let, mut, and constants in Rust.', 1),
+--   ((SELECT id FROM modules WHERE title = 'Rust Basics'), 'Ownership and Borrowing', 'Understand how Rust manages memory safely.', 2);
+-- 
+-- -- Insert tasks for lesson 1
+-- INSERT INTO tasks (lesson_id, task_type, question, explanation)
+-- VALUES
+--   ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'fill_code', 'Fill in the missing keyword: ___ x = 5;', 'You need to declare an immutable variable.'),
+--   ((SELECT id FROM lessons WHERE title = 'Variables and Mutability'), 'choice', 'Which keyword makes a variable mutable in Rust?', 'The mut keyword makes variables mutable.');
+-- 
+-- -- Answers for task1 (fill_code)
+-- INSERT INTO task_answers (task_id, answer_text, image, is_correct)
+-- VALUES
+--   ((SELECT id FROM tasks WHERE question LIKE 'Fill in the missing keyword%'), 'let', '', TRUE),
+--   ((SELECT id FROM tasks WHERE question LIKE 'Fill in the missing keyword%'), 'mut', '', FALSE),
+--   ((SELECT id FROM tasks WHERE question LIKE 'Fill in the missing keyword%'), 'const', '', FALSE);
+-- 
+-- -- Answers for task2 (multiple_choice)
+-- INSERT INTO task_answers (task_id, answer_text, image, is_correct)
+-- VALUES
+--   ((SELECT id FROM tasks WHERE question LIKE 'Which keyword makes a variable mutable%'), 'let', '', FALSE),
+--   ((SELECT id FROM tasks WHERE question LIKE 'Which keyword makes a variable mutable%'), 'mut', '', TRUE),
+--   ((SELECT id FROM tasks WHERE question LIKE 'Which keyword makes a variable mutable%'), 'var', '', FALSE);
+-- 
+-- -- Insert tasks for lesson 2
+-- INSERT INTO tasks (lesson_id, task_type, question, explanation)
+-- VALUES
+--   ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'fill_code', 'Fix the borrow checker error in the code snippet.', 'Remember: you cannot have mutable and immutable references at the same time.'),
+--   ((SELECT id FROM lessons WHERE title = 'Ownership and Borrowing'), 'string_cmp', 'What will be the result of comparing String::from(\"hi\") == \"hi\"?', 'Rust allows comparing String with &str because of the PartialEq implementation.');
+-- 
+-- -- Answers for task3 (debug_code)
+-- INSERT INTO task_answers (task_id, answer_text, image, is_correct)
+-- VALUES
+--   ((SELECT id FROM tasks WHERE question LIKE 'Fix the borrow checker%'), 'Remove the immutable reference.', '', TRUE),
+--   ((SELECT id FROM tasks WHERE question LIKE 'Fix the borrow checker%'), 'Use unsafe to bypass borrow checker.', '', FALSE);
+-- 
+-- -- Answers for task4 (string_cmp)
+-- INSERT INTO task_answers (task_id, answer_text, image, is_correct)
+-- VALUES
+--   ((SELECT id FROM tasks WHERE question LIKE 'What will be the result of comparing%'), 'true', '', TRUE);
 

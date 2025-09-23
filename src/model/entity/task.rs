@@ -47,10 +47,10 @@ impl LessonTask {
 
 #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct LessonTaskCreate {
-    lesson_id: Uuid,
-    task_type: String,
-    question: String,
-    explanation: String,
+    pub lesson_id: Uuid,
+    pub task_type: String,
+    pub question: String,
+    pub explanation: String,
 }
 
 #[async_trait]

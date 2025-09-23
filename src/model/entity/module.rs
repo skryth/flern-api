@@ -19,9 +19,9 @@ pub struct Module {
 
 #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct ModuleCreate {
-    title: String,
-    description: String,
-    order_index: Option<i32>,
+    pub title: String,
+    pub description: String,
+    pub order_index: Option<i32>,
 }
 
 impl ResourceTyped for Module {

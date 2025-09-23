@@ -48,10 +48,10 @@ impl Answer {
 
 #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct AnswerCreate {
-    task_id: Uuid,
-    answer_text: String,
-    image: String,
-    is_correct: Option<bool>,
+    pub task_id: Uuid,
+    pub answer_text: String,
+    pub image: String,
+    pub is_correct: Option<bool>,
 }
 
 #[async_trait]

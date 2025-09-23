@@ -48,10 +48,10 @@ impl Lesson {
 
 #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct LessonCreate {
-    module_id: Uuid,
-    title: String,
-    content: String,
-    order_index: Option<i32>,
+    pub module_id: Uuid,
+    pub title: String,
+    pub content: String,
+    pub order_index: Option<i32>,
 }
 
 #[async_trait]

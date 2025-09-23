@@ -24,6 +24,7 @@ pub struct Host {
 pub struct App {
     jwt: String,
     database_uri: String,
+    docs: bool,
 }
 
 impl Config {
@@ -80,6 +81,11 @@ impl App {
     #[inline]
     pub fn database_uri(&self) -> &str {
         &self.database_uri
+    }
+
+    #[inline]
+    pub fn docs(&self) -> bool {
+        self.docs
     }
 }
 

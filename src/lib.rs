@@ -33,16 +33,16 @@ pub async fn build_server() -> AppResult<(AppState, Router)> {
 
     let mm = ModelManager::new(db);
     let state = AppState::new(mm);
-    let app = web::routes::build_app(state.clone());
+    let app = web::routes::build_app(state.clone(), config);
     Ok((state, app))
 }
 
 pub async fn build_server_with_pool(db: DbConnection) -> AppResult<(AppState, Router)> {
-    config::Config::get_or_init(true).await;
+    let config = config::Config::get_or_init(true).await;
 
     let mm = ModelManager::new(db);
     let state = AppState::new(mm);
-    let app = web::routes::build_app(state.clone());
+    let app = web::routes::build_app(state.clone(), config);
     Ok((state, app))
 }
 

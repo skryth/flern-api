@@ -1,4 +1,4 @@
-use crate::web::{doc::ApiDoc, AppState};
+use crate::{web::{doc::ApiDoc, AppState}, Config};
 use axum::Router;
 use serde::Deserialize;
 use tower_cookies::CookieManagerLayer;
@@ -16,7 +16,7 @@ pub struct PaginationQuery {
     offset: i64,
 }
 
-pub fn build_app<S: Send + Sync + Clone + 'static>(state: AppState) -> Router<S> {
+pub fn build_app<S: Send + Sync + Clone + 'static>(state: AppState, config: &'static Config) -> Router<S> {
     let mut router = Router::new()
         .nest("/api/v1/account/", user::routes(state.clone()))
         .nest("/api/v1/modules/", modules::routes(state.clone()))
@@ -25,7 +25,7 @@ pub fn build_app<S: Send + Sync + Clone + 'static>(state: AppState) -> Router<S>
         .layer(CookieManagerLayer::default())
         .with_state(state);
 
-    if cfg!(debug_assertions) {
+    if config.app().docs() {
         let openapi = ApiDoc::openapi();
 
         router = router

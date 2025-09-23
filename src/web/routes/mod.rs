@@ -2,6 +2,7 @@ use crate::{web::{doc::ApiDoc, AppState}, Config};
 use axum::Router;
 use serde::Deserialize;
 use tower_cookies::CookieManagerLayer;
+use tower_http::cors::CorsLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -23,6 +24,7 @@ pub fn build_app<S: Send + Sync + Clone + 'static>(state: AppState, config: &'st
         .nest("/api/v1/lessons/", lessons::routes(state.clone()))
         .nest("/api/v1/tasks/", tasks::routes(state.clone()))
         .layer(CookieManagerLayer::default())
+        .layer(CorsLayer::very_permissive())
         .with_state(state);
 
     if config.app().docs() {

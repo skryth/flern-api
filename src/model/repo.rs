@@ -13,6 +13,7 @@ pub enum ResourceType {
     Task,
     Answer,
     UserProgress,
+    UserTaskAttempt,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, utoipa::ToSchema)]

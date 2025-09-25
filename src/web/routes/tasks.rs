@@ -2,7 +2,7 @@ use std::{path::PathBuf, str::FromStr};
 
 use crate::{
     model::{
-        entity::{Answer, LessonTask, UserProgress, UserProgressCreate}, CrudRepository, ResourceTyped
+        entity::{Answer, LessonTask, UserProgress, UserProgressCreate, UserTaskAttempt, UserTaskAttemptCreate}, CrudRepository, ResourceTyped
     },
     web::{
         dto::tasks::{TaskCheckRequest, TaskCheckResponse}, error::ErrorResponse, middlewares, AppState, RequestContext, WebError, WebResult
@@ -91,6 +91,10 @@ async fn tasks_check_answer_handler(
         .await
         .map_err(|e| WebError::resource_fetch_error(UserProgress::get_resource_type(), e))?;
     }
+    let utc = UserTaskAttemptCreate::new(user.user_id(), task.id(), answer.id(), is_correct);
+    UserTaskAttempt::create(state.pool(), &user, utc)
+        .await
+        .map_err(|e| WebError::resource_fetch_error(UserTaskAttempt::get_resource_type(), e))?;
 
     // Map database path to a download URL
     let base_url = Config::get_or_init()

@@ -10,6 +10,8 @@ pub mod user;
 pub mod modules;
 pub mod lessons;
 pub mod tasks;
+pub mod progress;
+
 
 #[derive(Debug, Clone, Deserialize, utoipa::ToSchema)]
 pub struct PaginationQuery {
@@ -23,6 +25,7 @@ pub fn build_app<S: Send + Sync + Clone + 'static>(state: AppState, config: &'st
         .nest("/api/v1/modules/", modules::routes(state.clone()))
         .nest("/api/v1/lessons/", lessons::routes(state.clone()))
         .nest("/api/v1/tasks/", tasks::routes(state.clone()))
+        .nest("/api/v1/progress/", progress::routes(state.clone()))
         .nest_service("/api/v1/static/", ServeDir::new("uploads"))
         .layer(CookieManagerLayer::default())
         .layer(CorsLayer::very_permissive())

@@ -147,6 +147,19 @@ impl CrudRepository<UserProgress, UserProgressCreate, uuid::Uuid> for UserProgre
     }
 }
 
+impl UserProgress {
+    pub async fn count_completed(
+        mm: &ModelManager,
+        actor: &AuthenticatedUser,
+    ) -> DatabaseResult<i64> {
+        let result: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM user_progress WHERE user_id = $1 AND status = TRUE")
+            .bind(actor.user_id())
+            .fetch_one(mm.executor())
+            .await?;
+        Ok(result)
+    }
+}
+
 impl_paginatable_for!(UserProgress, UserProgressCreate, Uuid);
 
 #[async_trait]

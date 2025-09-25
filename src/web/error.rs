@@ -64,6 +64,8 @@ pub enum ResourceError {
 pub enum ServerError {
     #[error("ServerCryptError: {0}")]
     ServerCryptError(#[from] crate::auth::CryptError),
+    #[error("ServerIOError: {0}")]
+    ServerIoError(#[from] std::io::Error),
 }
 
 impl ServerError {
@@ -226,6 +228,10 @@ impl WebError {
 
     pub fn server_crypt_error(e: CryptError) -> Self {
         Self::ServerError(ServerError::ServerCryptError(e))
+    }
+
+    pub fn server_io_error(e: std::io::Error) -> Self {
+        Self::ServerError(ServerError::ServerIoError(e))
     }
 
     pub fn user_bad_request(msg: String) -> Self {

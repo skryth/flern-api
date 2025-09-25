@@ -1,14 +1,12 @@
+use std::{path::PathBuf, str::FromStr};
+
 use crate::{
     model::{
-        CrudRepository, ResourceTyped,
-        entity::{Answer, LessonTask, UserProgress, UserProgressCreate},
+        entity::{Answer, LessonTask, UserProgress, UserProgressCreate}, CrudRepository, ResourceTyped
     },
     web::{
-        AppState, RequestContext, WebError, WebResult,
-        dto::tasks::{TaskCheckRequest, TaskCheckResponse},
-        error::ErrorResponse,
-        middlewares,
-    },
+        dto::tasks::{TaskCheckRequest, TaskCheckResponse}, error::ErrorResponse, middlewares, AppState, RequestContext, WebError, WebResult
+    }, Config,
 };
 use axum::{
     Json, Router, extract::State, http::StatusCode, middleware, response::IntoResponse,
@@ -94,12 +92,21 @@ async fn tasks_check_answer_handler(
         .map_err(|e| WebError::resource_fetch_error(UserProgress::get_resource_type(), e))?;
     }
 
+    // Map database path to a download URL
+    let base_url = Config::get_or_init()
+        .await
+        .app()
+        .host_url()
+        .trim_end_matches('/');
+    let image_path = PathBuf::from_str(answer.image()).unwrap();
+    let image_url = format!("{}/api/v1/static/{}", base_url, image_path.display());
+
     Ok((
         StatusCode::OK,
         Json(TaskCheckResponse {
             is_correct,
             explanation: task.explanation().to_string(),
-            image: answer.image().to_string(), // TODO: Map to URL instead of path
+            image: image_url,
         }),
     ))
 }

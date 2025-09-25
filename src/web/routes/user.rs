@@ -82,7 +82,7 @@ async fn user_signup_handler(
         .map_err(|e| WebError::resource_fetch_error(UserEntity::get_resource_type(), e))?;
 
     let timestamp = (chrono::Utc::now() + Duration::days(1)).timestamp();
-    let jwt_token = Config::get_or_init(false).await.app().jwt();
+    let jwt_token = Config::get_or_init().await.app().jwt();
 
     let claims = UserClaims {
         sub: created.id().to_string(),
@@ -136,7 +136,7 @@ async fn user_signin_handler(
     }
 
     let timestamp = (chrono::Utc::now() + Duration::days(1)).timestamp();
-    let jwt_token = Config::get_or_init(false).await.app().jwt();
+    let jwt_token = Config::get_or_init().await.app().jwt();
     let claims = UserClaims {
         sub: found.id().to_string(),
         exp: timestamp,
@@ -161,6 +161,38 @@ async fn user_verify_handler(ctx: RequestContext) -> WebResult<impl IntoResponse
         return Ok(StatusCode::UNAUTHORIZED);
     }
 
+    Ok(StatusCode::OK)
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/v1/account/logout",
+    description = "Log out current user",
+    responses(
+        (status = 200, description = "Successfully logged out"),
+        (status = 401, description = "You're not authorized to do this", body = ErrorResponse),
+        (status = 500, description = "Internal server error", body = ErrorResponse),
+    ),
+    tag = "account",
+    security(
+        ("cookie" = [])
+    )
+)]
+async fn user_logout_handler(
+    ctx: RequestContext,
+    cookies: Cookies,
+) -> WebResult<impl IntoResponse> {
+    let user = ctx.maybe_user();
+    if user.is_none() {
+        return Ok(StatusCode::UNAUTHORIZED);
+    }
+
+    let cookie = Cookie::build(AUTH_TOKEN)
+        .same_site(SameSite::Lax)
+        .http_only(true)
+        .path("/")
+        .build();
+    cookies.remove(cookie);
     Ok(StatusCode::OK)
 }
 

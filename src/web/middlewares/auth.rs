@@ -27,7 +27,7 @@ pub async fn extract_context_fn(
         }
     };
 
-    let claims = auth::process_token(token.value(), Config::get_or_init(false).await.app().jwt())
+    let claims = auth::process_token(token.value(), Config::get_or_init().await.app().jwt())
         .map_err(|e| WebError::auth_cookie_invalid(AUTH_TOKEN, e))?;
 
     let id = claims

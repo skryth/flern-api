@@ -22,6 +22,7 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/flern /app/flern
 COPY --from=builder /app/migrations /app/migrations
+RUN "mkdir uploads"
 
 ENV RUST_LOG=flern=info
 

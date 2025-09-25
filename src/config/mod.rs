@@ -24,12 +24,15 @@ pub struct Host {
 pub struct App {
     jwt: String,
     database_uri: String,
+    host_url: String,
     docs: bool,
 }
 
+static USE_LOCAL: bool = true;
+
 impl Config {
     #[tracing::instrument]
-    pub async fn get_or_init(use_local: bool) -> &'static Config {
+    pub async fn get_or_init() -> &'static Config {
         CONFIG
             .get_or_init(|| async {
                 let read_cfg = |use_local| -> ConfigResult<Self> {
@@ -38,7 +41,7 @@ impl Config {
                     Ok(config)
                 };
 
-                let config = match read_cfg(use_local) {
+                let config = match read_cfg(USE_LOCAL) {
                     Ok(c) => c,
                     Err(e) => {
                         if !matches!(e, error::ConfigError::ConfigNotFound) {
@@ -84,6 +87,11 @@ impl App {
     }
 
     #[inline]
+    pub fn host_url(&self) -> &str {
+        &self.host_url 
+    }
+
+    #[inline]
     pub fn docs(&self) -> bool {
         self.docs
     }
@@ -95,7 +103,7 @@ mod test {
 
     #[tokio::test]
     async fn config_test() {
-        let config = Config::get_or_init(true).await;
+        let config = Config::get_or_init().await;
         assert_eq!(config.host().bindto(), "127.0.0.1:5000"); // defaults
     }
 }

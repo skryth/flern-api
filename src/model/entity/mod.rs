@@ -18,3 +18,6 @@ pub use user_progress::{UserProgress, UserProgressCreate};
 
 mod user_task_attempt;
 pub use user_task_attempt::{UserTaskAttempt, UserTaskAttemptCreate};
+
+mod progress_token;
+pub use progress_token::{ProgressToken, ProgressTokenCreate};

@@ -22,6 +22,7 @@ impl Modify for CookieAuthModifier {
         crate::web::routes::user::user_list_handler,
         crate::web::routes::user::user_update_handler,
         crate::web::routes::user::user_delete_handler,
+        crate::web::routes::user::user_logout_handler,
         crate::web::routes::modules::modules_list_handler,
         crate::web::routes::lessons::lessons_get_handler,
         crate::web::routes::lessons::lessons_mark_done_handler,
@@ -29,6 +30,7 @@ impl Modify for CookieAuthModifier {
         crate::web::routes::lessons::lessons_get_next_handler,
         crate::web::routes::tasks::tasks_check_answer_handler,
         crate::web::routes::progress::progress_get_handler,
+        crate::web::routes::progress::progress_token_handler,
     ),
     modifiers(&CookieAuthModifier),
 )]

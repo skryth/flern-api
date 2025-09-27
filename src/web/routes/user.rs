@@ -29,6 +29,7 @@ pub fn routes<S>(state: AppState) -> Router<S> {
     let protected = Router::new()
         .route("/page", get(user_list_handler))
         .route("/verify", get(user_verify_handler))
+        .route("/logout", post(user_logout_handler))
         .route(
             "/{id}",
             put(user_update_handler).delete(user_delete_handler),

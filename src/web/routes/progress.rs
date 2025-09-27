@@ -80,8 +80,8 @@ async fn progress_get_handler(
     if token_user.is_none() {
         return Err(WebError::resource_not_found(UserEntity::get_resource_type()));
     }
-    let token_user = token_user.unwrap();
-    let token_user = AuthenticatedUser::new(token_user.id(), token_user.role());
+    let target_user = token_user.unwrap();
+    let token_user = AuthenticatedUser::new(target_user.id(), target_user.role());
 
     // run all dat shit in parallel
     let (total_lessons, completed_lessons, total_answers, correct_answers) = tokio::try_join!(
@@ -97,6 +97,7 @@ async fn progress_get_handler(
         completed_lessons,
         correct_answers,
         total_answers,
+        target_user.username().to_string(),
     );
 
     Ok((StatusCode::OK, Json(res)))

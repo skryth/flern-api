@@ -122,7 +122,7 @@ async fn progress_token_handler(
 ) -> WebResult<impl IntoResponse> {
     let user = ctx.user()?;
     let token = crate::auth::token::generate_token();
-    let expires_at = chrono::Utc::now() + chrono::Duration::seconds(10);
+    let expires_at = chrono::Utc::now() + chrono::Duration::minutes(30);
     let token_create = ProgressTokenCreate {
         user_id: user.user_id(),
         token,

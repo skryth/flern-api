@@ -63,7 +63,7 @@ async fn tasks_check_answer_handler(
             }
             let user_answer = req.user_answer.unwrap();
 
-            answer.answer_text() == user_answer.to_lowercase().trim()
+            answer.answer_text() == user_answer.trim()
         }
         _ => answer.is_correct(),
     };

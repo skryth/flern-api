@@ -206,7 +206,8 @@ impl ModuleWithLessonsRow {
                     json_build_object(
                         'id', l.id,
                         'title', l.title,
-                        'completed', COALESCE(up.status = true, false)
+                        'completed', COALESCE(up.status = true, false),
+                        'order_index', l.order_index
                     )
                 ) FILTER (WHERE l.id IS NOT NULL),
                 '[]'

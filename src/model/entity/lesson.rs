@@ -187,6 +187,7 @@ pub struct LessonWithStatusRow {
     pub title: String,
     pub content: String,
     pub status: bool,
+    pub order_index: i32,
 }
 
 impl LessonWithStatusRow {
@@ -202,6 +203,7 @@ impl LessonWithStatusRow {
                 l.module_id, 
                 l.title, 
                 l.content, 
+                l.order_index,
                 COALESCE(up.status, false) AS status
             FROM lessons l
             LEFT JOIN user_progress up
@@ -229,6 +231,7 @@ impl LessonWithStatusRow {
                 l.module_id,
                 l.title,
                 l.content,
+                l.order_index,
                 COALESCE(up.status, FALSE) AS status
             FROM lessons l
             JOIN modules m ON m.id = l.module_id

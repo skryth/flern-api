@@ -10,6 +10,7 @@ pub struct LessonResponse {
     title: String,
     content: String,
     status: bool,
+    order_index: i32,
 }
 
 impl From<LessonWithStatusRow> for LessonResponse {
@@ -20,6 +21,7 @@ impl From<LessonWithStatusRow> for LessonResponse {
             title: row.title,
             content: row.content,
             status: row.status,
+            order_index: row.order_index,
         }
     }
 }

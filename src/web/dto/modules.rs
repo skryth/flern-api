@@ -10,6 +10,7 @@ pub struct LessonShort {
     pub id: Uuid,
     pub title: String,
     pub completed: bool,
+    pub order_index: i32,
 }
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]

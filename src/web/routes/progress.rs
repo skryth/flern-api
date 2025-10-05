@@ -46,6 +46,13 @@ async fn progress_get_handler(
 ) -> WebResult<impl IntoResponse> {
     let admin = AuthenticatedUser::admin();
 
+    // cleanup old tokens
+    ProgressToken::cleanup_expired(state.pool(), &admin)
+        .await
+        .map(|n| tracing::debug!("progress_tokens: cleaned up {} expired tokens", n))
+        .map_err(|e| WebError::resource_fetch_error(ProgressToken::get_resource_type(), e))?;
+
+
     // find database progress
     let progress_token = ProgressToken::find_by_token(state.pool(), &admin, &token)
         .await

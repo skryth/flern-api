@@ -138,4 +138,15 @@ impl ProgressToken {
 
         Ok(result)
     }
+
+    pub async fn cleanup_expired(
+        mm: &ModelManager,
+        _actor: &AuthenticatedUser,
+    ) -> DatabaseResult<u64> {
+        let result = sqlx::query(r#"DELETE FROM progress_tokens WHERE expires_at < now()"#)
+            .execute(mm.executor())
+            .await?;
+
+        Ok(result.rows_affected())
+    }
 }
